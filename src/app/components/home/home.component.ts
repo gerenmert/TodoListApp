@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+import { TodoService } from 'src/app/services/todo.service';
+import { MatSnackBar } from '@angular/material';
 
 @Component({
   selector: 'app-home',
@@ -8,33 +10,15 @@ import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/dr
 })
 export class HomeComponent implements OnInit {
 
-  data = {
-    pendings: [
-      'Get to work',
-      'Pick up groceries',
-      'Go home',
-      'Fall asleep'
-    ],
+  data = {};
 
-    inProgress: [
-      'Get up',
-      'Brush teeth',
-      'Take a shower',
-      'Check e-mail',
-      'Walk dog'
-    ],
-
-    done: [
-      'Get up',
-      'Brush teeth',
-      'Take a shower'
-    ]
-  }
-
-  constructor() { }
+  constructor(
+    private todoService: TodoService,
+    private _snackBar: MatSnackBar
+  ) { }
 
   ngOnInit() {
-    this.setItems();
+    this.getAllTodos();               // sayfa yüklendiğinde todo'ları lsitelerde görebilmemiz için ngOnInit() içerisinde tanımlamamız gerekiyor
   }
 
   drop(event: CdkDragDrop<string[]>) {
@@ -45,25 +29,53 @@ export class HomeComponent implements OnInit {
         event.container.data,
         event.previousIndex,
         event.currentIndex);
-        Object.keys(this.data).forEach((key) => {                                                              
-          localStorage.setItem(key, JSON.stringify(this.data[key]));              // listeler arası taşıma işlemi olduğunda localStorage'a listelerin yeni hallerini kaydeder
+    }
+    this.updateTodo();
+  }
+
+  addTodo(todo) {
+    const obj = { todo: todo.value };                // api'nin istediği formatta veriyi hazırladık// gelen sonucu alabilmemiz için yani veri mi geliyor hata mı alıyoruz görebilmek için 
+    this.todoService.addTodo(obj)
+      .subscribe((res: any) => {                          // başarılı bir sonuç dönerse
+        this.getAllTodos();
+        todo.value = '';
+        this.openSnackBar(res.message);
+      }, (err) => {                                  // hata ile karşılaşırsak
+        console.log(err);
+      });
+  }
+
+  getAllTodos() {
+    this.todoService.getAllTodos().subscribe((res) => {
+        Object.keys(res).forEach((key) => {
+          this.data[key] = res[key];
+        });
+      }, (err) => {
+        console.log(err);
+      });
+  }
+  
+  updateTodo() {
+    this.todoService.updateTodo(this.data).subscribe((res) => {
+      this.getAllTodos();               // burada çağırmaz isek sürükleme işleminden sonra silmek isersek hata alırız
+    }, (err) => {
+      console.log(err);
+    });
+  }
+
+  deleteTodo(id) {
+    if(confirm('Are you sure you want to delete this item?')) {               // alert ile onay alma işlemi
+      this.todoService.deleteTodo(id).subscribe((res) => {
+        this.getAllTodos();
+      }, (err) => {
+        console.log(err);
       });
     }
   }
 
-  addTodo(todo) {
-    this.data.pendings.push(todo.value);                                           // Eğer value demeseydik tüm input satırını eklerdi, sadece yazılan değeri değil
-    localStorage.setItem('pendings', JSON.stringify(this.data.pendings));
-    todo.value = '';
-  }
-
-  setItems() {
-    Object.keys(this.data).forEach((key) => {                                     // data'nın içerisinde dön ve her elemanı (pendings, inProgress, done) key olarak ele al
-      if (!localStorage.getItem(key)) {                                           // localStorage'da key değeri yok ise if'e gir
-        localStorage.setItem(key, JSON.stringify(this.data[key]));                // data'nın içindeki elemanlardan key'e atanmış olanı stringify tipinde localStorage'a set et
-      } else {                                                                    // localStorage'da key değeri var ise ise else'e gir
-        this.data[key] = JSON.parse(localStorage.getItem(key));                   // data dizimizdeki key değerine atanan elemana localStorage'dan ilgili key değerini parse et
-      }
+  openSnackBar(message: string) {
+    this._snackBar.open(message, 'OK', {
+      duration: 2000,
     });
   }
 }

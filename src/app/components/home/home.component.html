@@ -31,8 +31,14 @@
             (cdkDropListDropped)="drop($event)">
             <div class="example-box" *ngFor="let item of data.pendings" cdkDrag>
               <img class="svg" src="assets/svg/clock.svg">
-              {{item}}
+              <span class="todo-title">{{item.todo}}</span>
+              <div class="button">
+                <button mat-icon-button color="warn" (click)="deleteTodo(item.id)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
             </div>
+            <div class="text-center pt-3" *ngIf="data.pendings?.length === 0"><small>No pending items were found</small></div>
           </div>
         </div>
 
@@ -48,8 +54,14 @@
               (cdkDropListDropped)="drop($event)">
               <div class="example-box" *ngFor="let item of data.inProgress" cdkDrag>
                 <img class="svg" src="assets/svg/hourglass.svg">
-                {{item}}
+                <span class="todo-title">{{item.todo}}</span>
+                <div class="button">
+                  <button mat-icon-button color="warn" (click)="deleteTodo(item.id)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
               </div>
+              <div class="text-center pt-3" *ngIf="data.inProgress?.length === 0"><small>No item under construction was found</small></div>
             </div>
           </div>
 
@@ -65,8 +77,14 @@
                 (cdkDropListDropped)="drop($event)">
                 <div class="example-box" *ngFor="let item of data.done" cdkDrag>
                   <img class="svg" src="assets/svg/like.svg">
-                  {{item}}
+                  <span class="todo-title">{{item.todo}}</span>
+                  <div class="button">
+                    <button mat-icon-button color="warn" (click)="deleteTodo(item.id)">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
                 </div>
+                <div class="text-center pt-3" *ngIf="data.done?.length === 0"><small>No completed item was found</small></div>
               </div>
             </div>
         </mat-card>

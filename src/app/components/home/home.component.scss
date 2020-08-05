@@ -32,6 +32,22 @@
         height: 24px;
         margin-right: 10px;
     }
+    .todo-title {
+      flex: 1;
+    }
+    .button {
+      opacity: 0;       // butonu gösterme
+      transition: .3s;   // 3 saniye sonra göster
+      button {
+        height: 24px;
+        line-height: 24px;
+      }
+    }
+    &:hover {          // üzerine gelindiğinde
+      .button { 
+        opacity: 1;    // butonu göster 
+      }
+    }
   }
   
   .cdk-drag-preview {
